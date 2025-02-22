@@ -30,11 +30,27 @@
 // Num images per column = 16
 // Num pixels per column = 16 images * 16 pixels = 256
 
-#define BUFFER_WIDTH    224
-#define BUFFER_HEIGHT   256
+#define TILE_WIDTH    14
+#define TILE_HEIGHT   16
+#define NUM_TILES     256
+#define TILES_PER_COL 16
+#define TILES_PER_ROW 16
 
-#define SPRITE_WIDTH    14
-#define SPRITE_HEIGHT   16
+#define TILE_BUFFER_WIDTH  ( TILE_WIDTH * TILES_PER_ROW )
+#define TILE_BUFFER_HEIGHT ( TILE_HEIGHT * TILES_PER_COL )
+
+#define CHAR_WIDTH    7
+#define CHAR_HEIGHT   8
+#define NUM_CHARS     128
+#define CHARS_PER_COL 8
+#define CHARS_PER_ROW 16
+
+#define CHAR_BUFFER_WIDTH  ( CHAR_WIDTH * CHARS_PER_ROW )
+#define CHAR_BUFFER_HEIGHT ( CHAR_HEIGHT * CHARS_PER_COL )
+
+#define SHOW_ONSCREEN 0
+#define EXPORT_STRIP  0
+
 
 enum colorType
 {
@@ -80,7 +96,7 @@ int32_t main()
   }
 
   set_color_depth( depth );
-  if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, BUFFER_WIDTH, BUFFER_HEIGHT, 0, 0 ) != 0 )
+  if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, 640, 480, 0, 0 ) != 0 )
   {
     allegro_message( "Failed to set graphics mode" );
     return -1;
@@ -93,7 +109,11 @@ int32_t main()
   colorTable[White]  = makecol( 0xFF, 0xFF, 0xFF );
   colorTable[Black]  = makecol( 0x00, 0x00, 0x00 );
 
-  BITMAP* pcBackBuffer{ create_bitmap( BUFFER_WIDTH, BUFFER_HEIGHT ) };
+  // ---------------------
+  // Process tile graphics
+  // ---------------------
+
+  BITMAP* backBuffer{ create_bitmap( TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT ) };
 
   std::ifstream infile1;
   infile1.open( "SHP0", std::ios::in | std::ios::binary | std::ios::ate );
@@ -107,8 +127,7 @@ int32_t main()
   }
 
   // Get file size (note that the first file was opened with ios::ate so the size can be fetched)
-  const auto size{ infile1.tellg() };
-  int32_t numBytes = (int32_t)size;
+  int32_t numBytes{ static_cast<int32_t>( infile1.tellg() ) };
 
   // Reset to the beginning
   infile1.seekg( 0, std::ios::beg );
@@ -117,7 +136,7 @@ int32_t main()
   int32_t y{ 0 };
 
   int32_t currentBytes{ 0 };
-  int32_t lineNum = 0;
+  int32_t lineNum{ 0 };
 
   while( currentBytes < numBytes )
   {
@@ -125,36 +144,36 @@ int32_t main()
     char pixel2{ static_cast<char>( infile2.get() ) };
 
     // Combine both pixels into one word, ignoring the colorGroup bits
-    int32_t pixel = ( ( pixel2 & 0x7f ) << 7 ) | ( pixel1 & 0x7f );
+    int32_t pixel{ ( ( pixel2 & 0x7f ) << 7 ) | ( pixel1 & 0x7f ) };
 
     // Place the first 7 pixels
     const int32_t colorGroup1{ ( pixel1 >> 7 ) & 0x1 };
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 0 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 1 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 2 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 3 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 4 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 0 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 1 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 2 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 3 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 4 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
 
     // Place the next 7 pixels
     const int32_t colorGroup2{ ( pixel2 >> 7 ) & 0x1 };
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 7 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 8 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 9 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 10 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 11 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 12 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( pcBackBuffer, x++, y, ( ( pixel >> 13 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 7 )  & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 8 )  & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 9 )  & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 10 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 11 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 12 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 13 ) & 0x3 ), colorGroup2 == 0 );
 
-    if( x % BUFFER_WIDTH == 0 )
+    if( ( x % TILE_BUFFER_WIDTH ) == 0 )
     {
       // Wrap to the next sprite
       x = 0;
-      y += SPRITE_HEIGHT;
+      y += TILE_HEIGHT;
     }
 
-    if( y >= BUFFER_HEIGHT )
+    if( y >= TILE_BUFFER_HEIGHT )
     {
       // Start back at the top, but on the next unread line of the sprite
       y = ++lineNum;
@@ -166,9 +185,131 @@ int32_t main()
   infile1.close();
   infile2.close();
 
-  blit( pcBackBuffer, screen, 0, 0, 0, 0, BUFFER_WIDTH, BUFFER_HEIGHT );
+  // Optionally show on-screen
+#if SHOW_ONSCREEN
+  blit( backBuffer, screen, 0, 0, 0, 0, TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT );
+#endif
 
-  save_pcx( "ultima4.pcx", pcBackBuffer, nullptr );
+  // Optionally create a vertical strip
+#if EXPORT_STRIP
+  int32_t sourceRow{ 0 };
+  int32_t sourceCol{ 0 };
+
+  BITMAP* backBuffer2{ create_bitmap( TILE_WIDTH, TILE_HEIGHT * NUM_TILES ) };
+  for( int32_t i{ 0 }; i < NUM_TILES; ++i )
+  {
+    blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT );
+    sourceCol += TILE_WIDTH;
+
+    if( ( sourceCol % TILE_BUFFER_WIDTH ) == 0 )
+    {
+      sourceCol = 0;
+      sourceRow += TILE_HEIGHT;
+    }
+  }
+
+  save_pcx( "tiles.pcx", backBuffer2, nullptr );
+
+  destroy_bitmap( backBuffer2 );
+#else
+  save_pcx( "tiles.pcx", backBuffer, nullptr );
+#endif // EXPORT_STRIP
+
+  destroy_bitmap( backBuffer );
+
+  // ---------------------
+  // Process text graphics
+  // ---------------------
+
+  backBuffer = create_bitmap( CHAR_BUFFER_WIDTH, CHAR_BUFFER_HEIGHT );
+
+  std::ifstream infile;
+  infile.open( "HTXT", std::ios::in | std::ios::binary | std::ios::ate );
+
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  // Get file size (note that the first file was opened with ios::ate so the size can be fetched)
+  numBytes = static_cast<int32_t>( infile.tellg() );
+
+  // Reset to the beginning
+  infile.seekg( 0, std::ios::beg );
+
+  x = 0;
+  y = 0;
+
+  currentBytes = 0;
+  lineNum = 0;
+
+  while( currentBytes < numBytes )
+  {
+    char pixel{ static_cast<char>( infile.get() ) };
+
+    // Place the 7 pixels
+    const int32_t colorGroup1{ ( pixel >> 7 ) & 0x1 };
+
+    // Remove the color group bit
+    pixel &= 0x7f;
+
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 0 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 1 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 2 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 3 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 4 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
+
+    if( ( x % CHAR_BUFFER_WIDTH ) == 0 )
+    {
+      // Wrap to the next sprite
+      x = 0;
+      y += CHAR_HEIGHT;
+    }
+
+    if( y >= CHAR_BUFFER_HEIGHT )
+    {
+      // Start back at the top, but on the next unread line of the sprite
+      y = ++lineNum;
+    }
+
+    ++currentBytes;
+  }
+
+  infile.close();
+
+  // Optionally show on-screen
+#if SHOW_ONSCREEN
+  blit( backBuffer, screen, 0, 0, 0, TILE_BUFFER_HEIGHT, CHAR_BUFFER_WIDTH, CHAR_BUFFER_HEIGHT );
+#endif
+
+  // Optionally create a vertical strip
+#if EXPORT_STRIP
+  sourceRow = 0;
+  sourceCol = 0;
+
+  backBuffer2 = create_bitmap( CHAR_WIDTH, CHAR_HEIGHT * NUM_CHARS );
+  for( int32_t i{ 0 }; i < NUM_CHARS; ++i )
+  {
+    blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT );
+    sourceCol += CHAR_WIDTH;
+
+    if( ( sourceCol % CHAR_BUFFER_WIDTH ) == 0 )
+    {
+      sourceCol = 0;
+      sourceRow += CHAR_HEIGHT;
+    }
+  }
+
+  save_pcx( "text.pcx", backBuffer2, nullptr );
+
+  destroy_bitmap( backBuffer2 );
+#else
+  save_pcx( "text.pcx", backBuffer, nullptr );
+#endif // EXPORT_STRIP
+
+  destroy_bitmap( backBuffer );
 
   return 0;
 }

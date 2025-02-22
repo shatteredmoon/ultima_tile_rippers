@@ -99,6 +99,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="HTXT" />
     <None Include="SHP0" />
     <None Include="SHP1" />
   </ItemGroup>
