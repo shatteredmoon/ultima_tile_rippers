@@ -28,7 +28,17 @@
 #define TILE_BUFFER_WIDTH  ( TILE_WIDTH * TILES_PER_ROW )
 #define TILE_BUFFER_HEIGHT ( TILE_HEIGHT * TILES_PER_COL )
 
-#define SHOW_ONSCREEN 0
+#define CHAR_WIDTH    7
+#define CHAR_HEIGHT   8
+#define NUM_CHARS     256
+#define CHARS_PER_COL 256
+#define CHARS_PER_ROW 1
+
+#define CHAR_BYTES_PER_ROW 1
+
+#define CHAR_BUFFER_WIDTH  ( CHAR_WIDTH * CHARS_PER_ROW )
+#define CHAR_BUFFER_HEIGHT ( CHAR_HEIGHT * CHARS_PER_COL )
+
 #define EXPORT_STRIP  0
 
 
@@ -82,12 +92,12 @@ int32_t main()
     return -1;
   }
 
-  colorTable[Green] = makecol( 0x25, 0xBE, 0x00 );
+  colorTable[Green]  = makecol( 0x25, 0xBE, 0x00 );
   colorTable[Orange] = makecol( 0xE5, 0x50, 0x00 );
   colorTable[Violet] = makecol( 0x9E, 0x00, 0xFF );
-  colorTable[Blue] = makecol( 0x00, 0x7E, 0xFF );
-  colorTable[White] = makecol( 0xFF, 0xFF, 0xFF );
-  colorTable[Black] = makecol( 0x00, 0x00, 0x00 );
+  colorTable[Blue]   = makecol( 0x00, 0x7E, 0xFF );
+  colorTable[White]  = makecol( 0xFF, 0xFF, 0xFF );
+  colorTable[Black]  = makecol( 0x00, 0x00, 0x00 );
 
   // ---------------------
   // Process tile graphics
@@ -103,10 +113,7 @@ int32_t main()
     return -1;
   }
 
-  const int32_t numBytesToRead{ TILES_PER_ROW * TILE_HEIGHT * TILE_BYTES_PER_ROW };
-
-  // Jump to the start of tile data
-  infile.seekg( 0, std::ios::beg );
+  int32_t numBytesToRead{ NUM_TILES * TILE_HEIGHT * TILE_BYTES_PER_ROW };
 
   int32_t x{ 0 };
   int32_t y{ 0 };
@@ -118,8 +125,6 @@ int32_t main()
   {
     char pixel1{ static_cast<char>( infile.get() ) };
     char pixel2{ static_cast<char>( infile.get() ) };
-
-    currentBytes += TILE_BYTES_PER_ROW;
 
     int32_t pixel{ ( ( pixel2 & 0x7f ) << 7 ) | ( pixel1 & 0x7f ) };
 
@@ -148,21 +153,11 @@ int32_t main()
       x = 0;
       y += 1;
     }
+
+    currentBytes += TILE_BYTES_PER_ROW;
   }
 
   infile.close();
-
-  // Optionally show on-screen
-#if SHOW_ONSCREEN
-  blit( backBuffer, screen, 0, 0, 0, 0, TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT );
-#endif
-
-#define TILE_WIDTH    14
-#define TILE_HEIGHT   16
-#define NUM_TILES     64
-#define TILES_PER_COL 1
-#define TILES_PER_ROW 64
-
 
   // Optionally create a vertical strip
 #if EXPORT_STRIP
@@ -188,6 +183,59 @@ int32_t main()
 #else
   save_pcx( "tiles.pcx", backBuffer, nullptr );
 #endif // EXPORT_STRIP
+
+  destroy_bitmap( backBuffer );
+
+  // ---------------------
+  // Process text graphics
+  // ---------------------
+
+  backBuffer = create_bitmap( CHAR_BUFFER_WIDTH, CHAR_BUFFER_HEIGHT );
+
+  infile.open( "HTXT", std::ios::in | std::ios::binary );
+
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  numBytesToRead = NUM_CHARS * CHAR_HEIGHT * TILE_BYTES_PER_ROW;
+
+  x = 0;
+  y = 0;
+
+  currentBytes = 0;
+  lineNum = 0;
+
+  while( currentBytes < numBytesToRead )
+  {
+    char pixel{ static_cast<char>( infile.get() ) };
+
+    // Place the 7 pixels
+    const int32_t colorGroup1{ ( pixel >> 7 ) & 0x1 };
+
+    // Remove the color group bit
+    pixel &= 0x7f;
+
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 0 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 1 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 2 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 3 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 4 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
+
+    // Wrap to next line
+    x = 0;
+    ++y;
+
+    currentBytes += CHAR_BYTES_PER_ROW;
+  }
+
+  infile.close();
+
+  // Exported as a vertical strip by default
+  save_pcx( "text.pcx", backBuffer, nullptr );
 
   destroy_bitmap( backBuffer );
 
