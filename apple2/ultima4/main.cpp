@@ -166,7 +166,7 @@ int32_t main()
     WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 12 ) & 0x3 ), colorGroup2 == 0 );
     WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 13 ) & 0x3 ), colorGroup2 == 0 );
 
-    if( ( x % TILE_BUFFER_WIDTH ) == 0 )
+    if( x >= TILE_BUFFER_WIDTH )
     {
       // Wrap to the next sprite
       x = 0;
@@ -201,7 +201,7 @@ int32_t main()
     blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT );
     sourceCol += TILE_WIDTH;
 
-    if( ( sourceCol % TILE_BUFFER_WIDTH ) == 0 )
+    if( sourceCol >= TILE_BUFFER_WIDTH )
     {
       sourceCol = 0;
       sourceRow += TILE_HEIGHT;
@@ -261,7 +261,7 @@ int32_t main()
     WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
     WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
 
-    if( ( x % CHAR_BUFFER_WIDTH ) == 0 )
+    if( x >= CHAR_BUFFER_WIDTH )
     {
       // Wrap to the next sprite
       x = 0;
@@ -295,7 +295,7 @@ int32_t main()
     blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT );
     sourceCol += CHAR_WIDTH;
 
-    if( ( sourceCol % CHAR_BUFFER_WIDTH ) == 0 )
+    if( sourceCol >= CHAR_BUFFER_WIDTH )
     {
       sourceCol = 0;
       sourceRow += CHAR_HEIGHT;
