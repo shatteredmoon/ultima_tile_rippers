@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Apple2Ultima3", "apple2\ult
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Apple2Ultima2", "apple2\ultima2\Apple2Ultima2.vcxproj", "{163B8A1D-EBB7-436A-BEA7-B96B3A270931}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Apple2Ultima1", "apple2\ultima1\Apple2Ultima1.vcxproj", "{05B7151F-EE06-46A8-9FE8-566CB06A3245}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -37,6 +39,12 @@ Global
 		{163B8A1D-EBB7-436A-BEA7-B96B3A270931}.Release|Win32.ActiveCfg = Release|Win32
 		{163B8A1D-EBB7-436A-BEA7-B96B3A270931}.Release|Win32.Build.0 = Release|Win32
 		{163B8A1D-EBB7-436A-BEA7-B96B3A270931}.Release|x64.ActiveCfg = Release|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Debug|Win32.Build.0 = Debug|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Debug|x64.ActiveCfg = Debug|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Release|Win32.ActiveCfg = Release|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Release|Win32.Build.0 = Release|Win32
+		{05B7151F-EE06-46A8-9FE8-566CB06A3245}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
