@@ -32,8 +32,7 @@
 #define TILE_BUFFER_WIDTH  ( TILE_WIDTH * TILES_PER_ROW )
 #define TILE_BUFFER_HEIGHT ( TILE_HEIGHT * TILES_PER_COL )
 
-#define SHOW_ONSCREEN 0
-#define EXPORT_STRIP  0
+#define EXPORT_VERTICAL_STRIP 0
 
 
 enum colorType
@@ -120,31 +119,31 @@ int32_t main()
 
   while( currentBytes < numBytesToRead )
   {
-    char pixel1{ static_cast<char>( infile.get() ) };
-    char pixel2{ static_cast<char>( infile.get() ) };
+    char tileData1{ static_cast<char>( infile.get() ) };
+    char tileData2{ static_cast<char>( infile.get() ) };
 
     currentBytes += TILE_BYTES_PER_ROW;
 
-    int32_t pixel{ ( ( pixel2 & 0x7f ) << 7 ) | ( pixel1 & 0x7f ) };
+    int32_t tileData{ ( ( tileData2 & 0x7f ) << 7 ) | ( tileData1 & 0x7f ) };
 
     // Place the first 7 pixels
-    const int32_t colorGroup1{ ( pixel1 >> 7 ) & 0x1 };
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 0 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 1 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 2 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 3 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 4 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 5 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 6 ) & 0x3 ), colorGroup1 == 0 );
+    const int32_t colorGroup1{ ( tileData1 >> 7 ) & 0x1 };
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 0 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 1 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 2 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 3 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 4 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 5 ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 6 ) & 0x3 ), colorGroup1 == 0 );
 
-    const int32_t colorGroup2{ ( pixel2 >> 7 ) & 0x1 };
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 7  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 8  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 9  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 10 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 11 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 12 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( pixel >> 13 ) & 0x3 ), colorGroup2 == 0 );
+    const int32_t colorGroup2{ ( tileData2 >> 7 ) & 0x1 };
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 7  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 8  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 9  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 10 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 11 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 12 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 13 ) & 0x3 ), colorGroup2 == 0 );
 
     if( x >= TILE_BUFFER_WIDTH )
     {
@@ -156,20 +155,8 @@ int32_t main()
 
   infile.close();
 
-  // Optionally show on-screen
-#if SHOW_ONSCREEN
-  blit( backBuffer, screen, 0, 0, 0, 0, TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT );
-#endif
-
-#define TILE_WIDTH    14
-#define TILE_HEIGHT   16
-#define NUM_TILES     64
-#define TILES_PER_COL 1
-#define TILES_PER_ROW 64
-
-
   // Optionally create a vertical strip
-#if EXPORT_STRIP
+#if EXPORT_VERTICAL_STRIP
   int32_t sourceRow{ 0 };
   int32_t sourceCol{ 0 };
 
@@ -191,7 +178,7 @@ int32_t main()
   destroy_bitmap( backBuffer2 );
 #else
   save_pcx( "tiles.pcx", backBuffer, nullptr );
-#endif // EXPORT_STRIP
+#endif // EXPORT_VERTICAL_STRIP
 
   destroy_bitmap( backBuffer );
 

@@ -115,8 +115,8 @@ int32_t main()
   // The first 256 bytes contain the left side of each tile
   while( currentBytes < numBytesToRead )
   {
-    const char pixel{ static_cast<char>( infile.get() ) };
-    rowData[currentBytes++] = ( pixel << 8 ) & 0xffff;
+    const char tileData{ static_cast<char>( infile.get() ) };
+    rowData[currentBytes++] = ( tileData << 8 ) & 0xffff;
   }
 
   currentBytes = 0;
@@ -124,8 +124,8 @@ int32_t main()
   // The next 256 bytes contain the right side of each tile
   while( currentBytes < numBytesToRead )
   {
-    const char pixel{ static_cast<char>( infile.get() ) };
-    rowData[currentBytes++] |= ( static_cast<uint32_t>( pixel ) & 0xff );
+    const char tileData{ static_cast<char>( infile.get() ) };
+    rowData[currentBytes++] |= ( static_cast<uint32_t>( tileData ) & 0xff );
   }
 
   int32_t x{ 0 };
@@ -133,29 +133,29 @@ int32_t main()
 
   for( int32_t i = 0; i < ULTSHAPES_ROWS; ++i )
   {
-    uint32_t data{ rowData[i] };
+    uint32_t tileData{ rowData[i] };
 
-    const int32_t colorGroup1{ ( data >> 15 ) & 0x1 };
-    const int32_t colorGroup2{ ( data >> 7 ) & 0x1 };
+    const int32_t colorGroup1{ ( tileData >> 15 ) & 0x1 };
+    const int32_t colorGroup2{ ( tileData >> 7 ) & 0x1 };
 
-    // Combine both pixels into one word, ignoring the colorGroup bits
-    data = ( ( ( data >> 8 ) & 0x7f ) << 7 ) | ( data & 0x7f );
+    // Combine both bytes into one word, ignoring the colorGroup bits
+    tileData = ( ( ( tileData >> 8 ) & 0x7f ) << 7 ) | ( tileData & 0x7f );
 
     // Place the row of pixels
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 0  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 1  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 2  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 3  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 4  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 5  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 6  ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 7  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 8  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 9  ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 10 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 11 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 12 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( data >> 13 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 0  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 1  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 2  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 3  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 4  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 5  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 6  ) & 0x3 ), colorGroup1 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 7  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 8  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 9  ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 10 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 11 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 12 ) & 0x3 ), colorGroup2 == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 13 ) & 0x3 ), colorGroup2 == 0 );
 
     // Next pixel row
     x = 0;
