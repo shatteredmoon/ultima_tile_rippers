@@ -99,9 +99,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="OUT.SHAPES" />
-    <None Include="SPA.SHAPES" />
-    <None Include="TWN.CAS.SHAPES" />
+    <None Include="MAPCHARS" />
     <None Include="ULTSHAPES" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

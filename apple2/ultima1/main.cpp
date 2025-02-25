@@ -1,5 +1,6 @@
 
-// This program requires the OUT.SHAPES, SPA.SHAPES, TWN.CAS.SHAPES, AND ULTSHAPES files from the .dsk image
+// This program requires the OUT.SHAPES, SPA.SHAPES, TWN.CAS.SHAPES, AND ULTSHAPES files from the original .dsk image
+// Additionally, MAPCHARS is required from the enhanced/re-released .dsk image
 // Apple II disk and file archive manager: https://a2ciderpress.com/
 
 // Resources:
@@ -21,6 +22,7 @@
 // SPA.SHAPES size 860 bytes
 // TWN.CAS.SHAPES size 256 bytes
 // ULTSHAPES size 763 bytes - possibly only contains 512 bytes of tile data?
+// MAPCHARS is 1024 bytes
 
 #define TILE_WIDTH    14
 #define TILE_HEIGHT   16
@@ -35,6 +37,19 @@
 #define ULTSHAPES_ROWS          ( ULTSHAPES_BYTES / TILE_BYTES_PER_ROW )
 #define ULTSHAPES_BUFFER_WIDTH  ( TILE_WIDTH * TILES_PER_ROW_ULTSHAPES )
 #define ULTSHAPES_BUFFER_HEIGHT ( TILE_HEIGHT * TILES_PER_COL_ULTSHAPES )
+
+#define CHAR_WIDTH    7
+#define CHAR_HEIGHT   8
+
+#define CHARS_PER_COL_MAPCHARS 1
+#define CHARS_PER_ROW_MAPCHARS 128
+
+#define BYTES_PER_CHAR     8
+#define CHAR_BYTES_PER_ROW 128
+
+#define MAPCHARS_BYTES         ( BYTES_PER_CHAR * CHARS_PER_ROW_MAPCHARS )
+#define MAPCHARS_BUFFER_WIDTH  ( CHAR_WIDTH * CHARS_PER_ROW_MAPCHARS )
+#define MAPCHARS_BUFFER_HEIGHT ( CHAR_HEIGHT * CHARS_PER_COL_MAPCHARS )
 
 
 enum colorType
@@ -95,7 +110,7 @@ int32_t main()
   colorTable[Black]  = makecol( 0x00, 0x00, 0x00 );
 
   // ---------------------
-  // Process tile graphics
+  // Process ULTSHAPES
   // ---------------------
 
   BITMAP* backBuffer{ create_bitmap( ULTSHAPES_BUFFER_WIDTH, ULTSHAPES_BUFFER_HEIGHT ) };
@@ -165,6 +180,60 @@ int32_t main()
   infile.close();
 
   save_pcx( "ultshapes.pcx", backBuffer, nullptr );
+
+  destroy_bitmap( backBuffer );
+
+  // ---------------------
+  // Process MAPCHARS
+  // ---------------------
+
+  backBuffer = create_bitmap( MAPCHARS_BUFFER_WIDTH, MAPCHARS_BUFFER_HEIGHT );
+
+  infile.open( "MAPCHARS", std::ios::in | std::ios::binary );
+
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  numBytesToRead = CHARS_PER_ROW_MAPCHARS * BYTES_PER_CHAR;
+
+  x = 0;
+  y = 0;
+
+  currentBytes = 0;
+
+  while( currentBytes < numBytesToRead )
+  {
+    char tileData{ static_cast<char>( infile.get() ) };
+
+    // Place the first 7 pixels
+    const int32_t colorGroup{ ( tileData >> 7 ) & 0x1 };
+
+    // Remove the colorGroup bit
+    tileData &= 0x7f;
+
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 0 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 1 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 2 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 3 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 4 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 5 ) & 0x3 ), colorGroup == 0 );
+    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 6 ) & 0x3 ), colorGroup == 0 );
+
+    if( MAPCHARS_BUFFER_WIDTH == x )
+    {
+      // Wrap to the next line
+      x = 0;
+      ++y;
+    }
+
+    ++currentBytes;
+  }
+
+  infile.close();
+
+  save_pcx( "mapchars.pcx", backBuffer, nullptr );
 
   destroy_bitmap( backBuffer );
 
