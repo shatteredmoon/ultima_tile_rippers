@@ -101,6 +101,7 @@
   <ItemGroup>
     <None Include="charset.old" />
     <None Include="shapes.old" />
+    <None Include="start.old" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
