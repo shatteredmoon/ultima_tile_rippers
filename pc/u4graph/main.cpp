@@ -1,3 +1,13 @@
+// Extracts the shapes and charset graphics from Josh Steele's u4graph ega utility for Ultima 4.
+// Requires the shapes.old and charset.old 
+
+// Also extracts any of the RLE .old files, such as start.old and key7.old.
+
+// Fun note: The map data is stored in the PARTY.EXE file and starts around offset 0xe370.
+// There are 2 bytes for every tile since there are more than 256 tiles that can be shown.
+// The first byte will be either 0x00 or 0x01 which means use tile set 0 or tile set 1.
+// Nothing seems to be behind the mysteriously locked door :(
+
 #define ALLEGRO_NO_MAGIC_MAIN
 #define ALLEGRO_STATICLINK 1
 
@@ -23,6 +33,9 @@
 
 #define CHAR_BUFFER_WIDTH  ( CHAR_WIDTH * CHARS_PER_ROW )
 #define CHAR_BUFFER_HEIGHT ( CHAR_HEIGHT * CHARS_PER_COL )
+
+#define BORDER_WIDTH  320
+#define BORDER_HEIGHT 200
 
 
 int32_t main()
@@ -73,6 +86,7 @@ int32_t main()
   BITMAP* backBuffer{ create_bitmap( TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT ) };
 
   std::ifstream infile;
+
   infile.open( "shapes.old", std::ios::in | std::ios::binary | std::ios::ate );
 
   if( !infile.is_open() )
@@ -112,7 +126,7 @@ int32_t main()
 
   infile.close();
 
-  save_pcx( "tiles.pcx", backBuffer, nullptr );
+  save_pcx( "shapes.pcx", backBuffer, nullptr );
 
   destroy_bitmap( backBuffer );
 
@@ -161,7 +175,80 @@ int32_t main()
 
   infile.close();
 
-  save_pcx( "text.pcx", backBuffer, nullptr );
+  save_pcx( "charset.pcx", backBuffer, nullptr );
+
+  destroy_bitmap( backBuffer );
+
+  // -----------------------
+  // Border / codex graphics
+  // -----------------------
+
+  backBuffer = create_bitmap( BORDER_WIDTH, BORDER_HEIGHT );
+
+  // Just replace this file with any of the .old files you'd like to extract.
+  // Rename the outut file below as well.
+  infile.open( "start.old", std::ios::in | std::ios::binary | std::ios::ate );
+
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  // Get file size (note that the first file was opened with ios::ate so the size can be fetched)
+  numBytes = static_cast<int32_t>( infile.tellg() );
+
+  // Reset to the beginning
+  infile.seekg( 0, std::ios::beg );
+
+  x = 0;
+  y = 0;
+
+  currentBytes = 0;
+  lineNum = 0;
+
+  while( currentBytes < numBytes )
+  {
+    const char tileData{ static_cast<char>( infile.get() ) };
+    ++currentBytes;
+
+    if( tileData == 0x2 )
+    {
+      // Handle the run of info
+      const uint8_t numPixels{ static_cast<uint8_t>( infile.get() ) };
+      ++currentBytes;
+
+      const uint8_t color{ static_cast<uint8_t>( infile.get() ) };
+      ++currentBytes;
+
+      for( uint16_t i = 0; i < numPixels; ++i )
+      {
+        putpixel( backBuffer, x++, y, egaColorPalette[( color >> 4 ) & 0xF] );
+        putpixel( backBuffer, x++, y, egaColorPalette[color & 0xF] );
+
+        if( x >= BORDER_WIDTH )
+        {
+          x = 0;
+          ++y;
+        }
+      }
+    }
+    else
+    {
+      // Simple pixel data
+      putpixel( backBuffer, x++, y, egaColorPalette[( tileData >> 4 ) & 0xF] );
+      putpixel( backBuffer, x++, y, egaColorPalette[tileData & 0xF] );
+    }
+
+    if( x >= BORDER_WIDTH )
+    {
+      x = 0;
+      ++y;
+    }
+  }
+
+  infile.close();
+
+  save_pcx( "start.pcx", backBuffer, nullptr );
 
   destroy_bitmap( backBuffer );
 

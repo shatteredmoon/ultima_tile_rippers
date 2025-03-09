@@ -100,8 +100,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="charset.old" />
+    <None Include="compassn.old" />
+    <None Include="courage.old" />
+    <None Include="honesty.old" />
+    <None Include="honor.old" />
+    <None Include="humility.old" />
+    <None Include="justice.old" />
+    <None Include="key7.old" />
+    <None Include="love.old" />
+    <None Include="rune_0.old" />
+    <None Include="rune_1.old" />
+    <None Include="rune_2.old" />
+    <None Include="rune_3.old" />
+    <None Include="rune_4.old" />
+    <None Include="rune_5.old" />
+    <None Include="sacrific.old" />
     <None Include="shapes.old" />
+    <None Include="spirit.old" />
     <None Include="start.old" />
+    <None Include="stoncrcl.old" />
+    <None Include="truth.old" />
+    <None Include="valor.old" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
