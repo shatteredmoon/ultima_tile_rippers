@@ -1,9 +1,17 @@
 /.vs
 /Debug
+/Release
 /apple2/ultima1/Debug
+/apple2/ultima1/Release
 /apple2/ultima2/Debug
+/apple2/ultima2/Release
 /apple2/ultima3/Debug
+/apple2/ultima3/Release
 /apple2/ultima4/Debug
+/apple2/ultima4/Release
 /c64
 /pc/u4graph/Debug
+/pc/u4graph/Release
+/util/lzw_decode/Debug
+/util/lzw_decode/Release
 *.user

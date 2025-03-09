@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Apple2Ultima1", "apple2\ult
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PCUtilU4Graph", "pc\u4graph\PCUtilU4Graph.vcxproj", "{A863F99D-F990-4FF9-BC7D-11E7BFD62C78}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LZWDecode", "util\lzw_decode\LZWDecode.vcxproj", "{A349F85A-8458-4BE0-97DB-B395D4235FD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -53,6 +55,14 @@ Global
 		{A863F99D-F990-4FF9-BC7D-11E7BFD62C78}.Release|Win32.ActiveCfg = Release|Win32
 		{A863F99D-F990-4FF9-BC7D-11E7BFD62C78}.Release|Win32.Build.0 = Release|Win32
 		{A863F99D-F990-4FF9-BC7D-11E7BFD62C78}.Release|x64.ActiveCfg = Release|Win32
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Debug|Win32.Build.0 = Debug|Win32
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Debug|x64.ActiveCfg = Debug|x64
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Debug|x64.Build.0 = Debug|x64
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Release|Win32.ActiveCfg = Release|Win32
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Release|Win32.Build.0 = Release|Win32
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Release|x64.ActiveCfg = Release|x64
+		{A349F85A-8458-4BE0-97DB-B395D4235FD0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
