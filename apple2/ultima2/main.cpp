@@ -200,11 +200,11 @@ int32_t main()
 
   // Optionally create a vertical strip
 #if EXPORT_VERTICAL_STRIP
-  int32_t sourceRow{ 0 };
-  int32_t sourceCol{ 0 };
+  uint32_t sourceRow{ 0 };
+  uint32_t sourceCol{ 0 };
 
   BITMAP* backBuffer2{ create_bitmap( TILE_WIDTH, TILE_HEIGHT * NUM_TILES ) };
-  for( int32_t i{ 0 }; i < NUM_TILES; ++i )
+  for( uint32_t i{ 0 }; i < NUM_TILES; ++i )
   {
     blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT );
     sourceCol += TILE_WIDTH;

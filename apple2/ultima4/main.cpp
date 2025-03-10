@@ -1,4 +1,4 @@
-
+// Extracts Ultima IV tile and text data from Apple ][ sources.
 // This program requires the SHP0 and SHP1 files extracted from the Apple II Ultima IV Boot.dsk
 // Apple II disk and file archive manager: https://a2ciderpress.com/
 
@@ -7,7 +7,7 @@
 // https://en.wikipedia.org/wiki/Apple_II_graphics
 // https://retrocomputing.stackexchange.com/questions/6271/what-determines-the-color-of-every-8th-pixel-on-the-apple-ii
 // https://www.xtof.info/hires-graphics-apple-ii.html
-
+// Gil Megidish's pixel rendering algorithm
 
 #define ALLEGRO_NO_MAGIC_MAIN
 #define ALLEGRO_STATICLINK 1
@@ -64,19 +64,55 @@ enum colorType
 int colorTable[6];
 
 
-void WriteColorForByte( BITMAP* backBuffer, int32_t x, int32_t y, char value, bool useGreenViolet )
+// From Gil Megidish:
+// The algorithm is this: for any given pixel at x, if x is 1 and any of( x - 1 ), ( x + 1 ) are 1s, then pixel at x is
+// white. if x is 0 and the two adjacent are also zero, then pixel at x is black. Now it's tricky. If x is 1 and both
+// adjacent pixels are 0, then pixel at x is green/purple (if odd or even), there's also blue / orange for second
+// palette. If x is 0, and both adjacent are 1, then the previous algorithm also catches. Sum it up, color at pixel x
+// depends on the two adjacent pixels, the MSB of the byte being rendered, and if this pixel is odd / even.
+
+void Draw( BITMAP* buffer, uint32_t x, uint32_t y, uint8_t value, bool lastBitOn, bool firstColorGroup, bool odd )
 {
   colorType color{ Black };
 
-  switch( value )
+  if( ( value & 0x1 ) == 1 )
   {
-    case 0x0: color = Black; break;
-    case 0x1: color = useGreenViolet ? Green : Orange; break;
-    case 0x2: color = useGreenViolet ? Violet : Blue; break;
-    case 0x3: color = White; break;
+    if( lastBitOn || ( ( value >> 1 ) & 0x1 ) )
+    {
+      color = White;
+    }
+    else if( !lastBitOn && ( ( ( value >> 1 ) & 0x1 ) == 0 ) )
+    {
+      if( odd )
+      {
+        color = firstColorGroup ? Green : Orange;
+      }
+      else
+      {
+        color = firstColorGroup ? Violet : Blue;
+      }
+    }
+  }
+  else
+  {
+    if( !lastBitOn && ( ( ( value >> 1 ) & 0x1 ) == 0 ) )
+    {
+      color = Black;
+    }
+    if( lastBitOn && ( ( value >> 1 ) & 0x1 ) )
+    {
+      if( odd )
+      {
+        color = firstColorGroup ? Violet : Blue;
+      }
+      else
+      {
+        color = firstColorGroup ? Green : Orange;
+      }
+    }
   }
 
-  putpixel( backBuffer, x, y, colorTable[color] );
+  putpixel( buffer, x, y, colorTable[color] );
 }
 
 
@@ -126,44 +162,44 @@ int32_t main()
   }
 
   // Get file size (note that the first file was opened with ios::ate so the size can be fetched)
-  int32_t numBytes{ static_cast<int32_t>( infile1.tellg() ) };
+  uint32_t numBytes{ static_cast<uint32_t>( infile1.tellg() ) };
 
   // Reset to the beginning
   infile1.seekg( 0, std::ios::beg );
 
-  int32_t x{ 0 };
-  int32_t y{ 0 };
+  uint32_t x{ 0 };
+  uint32_t y{ 0 };
 
-  int32_t currentBytes{ 0 };
-  int32_t lineNum{ 0 };
+  uint32_t currentBytes{ 0 };
+  uint32_t lineNum{ 0 };
 
   while( currentBytes < numBytes )
   {
-    char tileData1{ static_cast<char>( infile1.get() ) };
-    char tileData2{ static_cast<char>( infile2.get() ) };
+    const uint8_t tileData1{ static_cast<uint8_t>( infile1.get() ) };
+    const uint8_t tileData2{ static_cast<uint8_t>( infile2.get() ) };
 
     // Combine both bytes into one word, ignoring the colorGroup bits
-    int32_t tileData{ ( ( tileData2 & 0x7f ) << 7 ) | ( tileData1 & 0x7f ) };
+    const uint16_t tileData{ static_cast<uint16_t>( ( ( tileData2 & 0x7f ) << 7 ) | ( tileData1 & 0x7f ) ) };
 
     // Place the first 7 pixels
-    const int32_t colorGroup1{ ( tileData1 >> 7 ) & 0x1 };
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 0 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 1 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 2 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 3 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 4 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 5 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 6 ) & 0x3 ), colorGroup1 == 0 );
+    const bool colorGroup1{ ( ( tileData1 >> 7 ) & 0x1 ) == 0 };
+    Draw( backBuffer, x++, y, ( tileData >> 0 ) & 0x3, false, colorGroup1, true );
+    Draw( backBuffer, x++, y, ( tileData >> 1 ) & 0x3, ( tileData >> 0 ) & 0x1, colorGroup1, false );
+    Draw( backBuffer, x++, y, ( tileData >> 2 ) & 0x3, ( tileData >> 1 ) & 0x1, colorGroup1, true );
+    Draw( backBuffer, x++, y, ( tileData >> 3 ) & 0x3, ( tileData >> 2 ) & 0x1, colorGroup1, false );
+    Draw( backBuffer, x++, y, ( tileData >> 4 ) & 0x3, ( tileData >> 3 ) & 0x1, colorGroup1, true );
+    Draw( backBuffer, x++, y, ( tileData >> 5 ) & 0x3, ( tileData >> 4 ) & 0x1, colorGroup1, false );
+    Draw( backBuffer, x++, y, ( tileData >> 6 ) & 0x3, ( tileData >> 5 ) & 0x1, colorGroup1, true );
 
     // Place the next 7 pixels
-    const int32_t colorGroup2{ ( tileData2 >> 7 ) & 0x1 };
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 7 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 8 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 9 )  & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 10 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 11 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 12 ) & 0x3 ), colorGroup2 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 13 ) & 0x3 ), colorGroup2 == 0 );
+    const bool colorGroup2{ ( ( tileData2 >> 7 ) & 0x1 ) == 0 };
+    Draw( backBuffer, x++, y, ( tileData >> 7 )  & 0x3, ( tileData >> 6 )  & 0x1, colorGroup2, false );
+    Draw( backBuffer, x++, y, ( tileData >> 8 )  & 0x3, ( tileData >> 7 )  & 0x1, colorGroup2, true );
+    Draw( backBuffer, x++, y, ( tileData >> 9 )  & 0x3, ( tileData >> 8 )  & 0x1, colorGroup2, false );
+    Draw( backBuffer, x++, y, ( tileData >> 10 ) & 0x3, ( tileData >> 9 )  & 0x1, colorGroup2, true );
+    Draw( backBuffer, x++, y, ( tileData >> 11 ) & 0x3, ( tileData >> 10 ) & 0x1, colorGroup2, false );
+    Draw( backBuffer, x++, y, ( tileData >> 12 ) & 0x3, ( tileData >> 11 ) & 0x1, colorGroup2, true );
+    Draw( backBuffer, x++, y, ( tileData >> 13 ) & 0x3, ( tileData >> 12 ) & 0x1, colorGroup2, false );
 
     if( x >= TILE_BUFFER_WIDTH )
     {
@@ -186,11 +222,11 @@ int32_t main()
 
   // Optionally create a vertical strip
 #if EXPORT_VERTICAL_STRIP
-  int32_t sourceRow{ 0 };
-  int32_t sourceCol{ 0 };
+  uint32_t sourceRow{ 0 };
+  uint32_t sourceCol{ 0 };
 
   BITMAP* backBuffer2{ create_bitmap( TILE_WIDTH, TILE_HEIGHT * NUM_TILES ) };
-  for( int32_t i{ 0 }; i < NUM_TILES; ++i )
+  for( uint32_t i{ 0 }; i < NUM_TILES; ++i )
   {
     blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT );
     sourceCol += TILE_WIDTH;
@@ -239,21 +275,21 @@ int32_t main()
 
   while( currentBytes < numBytes )
   {
-    char tileData{ static_cast<char>( infile.get() ) };
+    uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
 
-    const int32_t colorGroup1{ ( tileData >> 7 ) & 0x1 };
+    const bool colorGroup{ ( ( tileData >> 7 ) & 0x1 ) == 0 };
 
     // Remove the color group bit
     tileData &= 0x7f;
 
     // Place the 7 pixels
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 0 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 1 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 2 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 3 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 4 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 5 ) & 0x3 ), colorGroup1 == 0 );
-    WriteColorForByte( backBuffer, x++, y, ( ( tileData >> 6 ) & 0x3 ), colorGroup1 == 0 );
+    Draw( backBuffer, x++, y, ( ( tileData >> 0 ) & 0x3 ), false, colorGroup, true );
+    Draw( backBuffer, x++, y, ( ( tileData >> 1 ) & 0x3 ), ( tileData >> 0 ) & 0x1, colorGroup, false );
+    Draw( backBuffer, x++, y, ( ( tileData >> 2 ) & 0x3 ), ( tileData >> 1 ) & 0x1, colorGroup, true );
+    Draw( backBuffer, x++, y, ( ( tileData >> 3 ) & 0x3 ), ( tileData >> 2 ) & 0x1, colorGroup, false );
+    Draw( backBuffer, x++, y, ( ( tileData >> 4 ) & 0x3 ), ( tileData >> 3 ) & 0x1, colorGroup, true );
+    Draw( backBuffer, x++, y, ( ( tileData >> 5 ) & 0x3 ), ( tileData >> 4 ) & 0x1, colorGroup, false );
+    Draw( backBuffer, x++, y, ( ( tileData >> 6 ) & 0x3 ), ( tileData >> 5 ) & 0x1, colorGroup, true );
 
     if( x >= CHAR_BUFFER_WIDTH )
     {
