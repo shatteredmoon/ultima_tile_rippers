@@ -1,5 +1,6 @@
 // Extracts Ultima III tile and text data from Apple ][ sources.
-// This program requires the ultima31.dsk image
+// This program requires the ultima31.dsk image (the SHAPES here was extracted from that image starting at offset
+// 0x5B00 to 0x7AFF). Each 128 byte stride contains 1 row of data (2 bytes each) for each of the 64 tiles.
 // Apple II disk and file archive manager: https://a2ciderpress.com/
 
 // Resources:
@@ -16,10 +17,6 @@
 
 #include "../../allegro/include/allegro.h"
 #include "../../allegro/include/winalleg.h"
-
-// Starting at data offset 0x5B00, each 128 byte stride contains 1 row of data (2 bytes each) for each of the 64 tiles
-
-#define TILE_DATA_OFFSET 0x5B00
 
 #define TILE_WIDTH    14
 #define TILE_HEIGHT   16
@@ -135,7 +132,7 @@ int32_t main()
   BITMAP* backBuffer{ create_bitmap( TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT ) };
 
   std::ifstream infile;
-  infile.open( "ultima31.dsk", std::ios::in | std::ios::binary );
+  infile.open( "SHAPES", std::ios::in | std::ios::binary );
 
   if( !infile.is_open() )
   {
@@ -145,7 +142,7 @@ int32_t main()
   const uint32_t numBytesToRead{ TILES_PER_ROW * TILE_HEIGHT * TILE_BYTES_PER_ROW };
 
   // Jump to the start of tile data
-  infile.seekg( TILE_DATA_OFFSET, std::ios::beg );
+  infile.seekg( 0, std::ios::beg );
 
   uint32_t x{ 0 };
   uint32_t y{ 0 };
