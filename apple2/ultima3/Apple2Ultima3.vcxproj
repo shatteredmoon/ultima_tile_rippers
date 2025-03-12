@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SHAPES" />
+    <None Include="TEXT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
