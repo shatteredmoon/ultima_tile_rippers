@@ -163,11 +163,12 @@ int32_t main()
   uint32_t numBytesToRead{ ULTSHAPES_BYTES / 2 };
   uint32_t currentBytes{ 0 };
   uint32_t rowData[ULTSHAPES_ROWS];
+  uint32_t rowData2[ULTSHAPES_ROWS];
 
   // The first 256 bytes contain the left side of each tile
   while( currentBytes < numBytesToRead )
   {
-    const char tileData{ static_cast<char>( infile.get() ) };
+    const uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
     rowData[currentBytes++] = ( tileData << 8 ) & 0xffff;
   }
 
@@ -176,7 +177,7 @@ int32_t main()
   // The next 256 bytes contain the right side of each tile
   while( currentBytes < numBytesToRead )
   {
-    const char tileData{ static_cast<char>( infile.get() ) };
+    const uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
     rowData[currentBytes++] |= ( static_cast<uint32_t>( tileData ) & 0xff );
   }
 

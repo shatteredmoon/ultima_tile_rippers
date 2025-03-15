@@ -114,7 +114,7 @@ int32_t main()
     for( int32_t i = 0; i < 8; ++i )
     {
       // Display 2 pixels per byte
-      char tileData{ static_cast<char>( infile.get() ) };
+      uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
       putpixel( backBuffer, x++, y, egaColorPalette[ (tileData >> 4) & 0xF ] );
       putpixel( backBuffer, x++, y, egaColorPalette[ tileData & 0xF ] );
     }
@@ -163,7 +163,7 @@ int32_t main()
     for( int32_t i = 0; i < 4; ++i )
     {
       // Display 2 pixels per byte
-      char tileData{ static_cast<char>( infile.get() ) };
+      uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
       putpixel( backBuffer, x++, y, egaColorPalette[( tileData >> 4 ) & 0xF] );
       putpixel( backBuffer, x++, y, egaColorPalette[tileData & 0xF] );
     }
@@ -208,7 +208,7 @@ int32_t main()
 
   while( currentBytes < numBytes )
   {
-    const char tileData{ static_cast<char>( infile.get() ) };
+    const uint8_t tileData{ static_cast<uint8_t>( infile.get() ) };
     ++currentBytes;
 
     if( tileData == 0x2 )
