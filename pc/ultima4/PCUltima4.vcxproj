@@ -100,8 +100,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CHARSET.EGA" />
+    <None Include="COMPASSN.EGA" />
+    <None Include="COURAGE.EGA" />
+    <None Include="HONESTY.EGA" />
+    <None Include="HONOR.EGA" />
+    <None Include="HUMILITY.EGA" />
+    <None Include="JUSTICE.EGA" />
+    <None Include="KEY7.EGA" />
+    <None Include="LOVE.EGA" />
+    <None Include="RUNE_0.EGA" />
+    <None Include="RUNE_1.EGA" />
+    <None Include="RUNE_2.EGA" />
+    <None Include="RUNE_3.EGA" />
+    <None Include="RUNE_4.EGA" />
+    <None Include="RUNE_5.EGA" />
+    <None Include="SACRIFIC.EGA" />
     <None Include="SHAPES.EGA" />
+    <None Include="SPIRIT.EGA" />
     <None Include="START.EGA" />
+    <None Include="STONCRCL.EGA" />
+    <None Include="TRUTH.EGA" />
+    <None Include="VALOR.EGA" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
