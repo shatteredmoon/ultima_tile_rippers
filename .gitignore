@@ -12,6 +12,8 @@
 /c64
 /pc/u4graph/Debug
 /pc/u4graph/Release
+/pc/ultima4/Debug
+/pc/ultima4/Release
 /util/lzw_decode/Debug
 /util/lzw_decode/Release
 *.user

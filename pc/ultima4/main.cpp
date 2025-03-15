@@ -1,12 +1,7 @@
-// Extracts the shapes and charset graphics from Josh Steele's u4graph ega utility for Ultima 4.
-// Requires the shapes.old and charset.old 
+// Extracts the shapes, charset graphics, intro, and endgame graphic from the PC version of Ultima 4.
+// Requires the shapes.ega and charset.ega files.
 
-// Also extracts any of the RLE .old files, such as start.old and key7.old.
-
-// Fun note: The map data is stored in the PARTY.EXE file and starts around offset 0xe370.
-// There are 2 bytes for every tile since there are more than 256 tiles that can be shown.
-// The first byte will be either 0x00 or 0x01 which means use tile set 0 or tile set 1.
-// Nothing seems to be behind the mysteriously locked door :(
+// Also extracts any of the RLE intro and engame files, such as start.ega and key7.ega.
 
 #define ALLEGRO_NO_MAGIC_MAIN
 #define ALLEGRO_STATICLINK 1
@@ -87,7 +82,7 @@ int32_t main()
 
   std::ifstream infile;
 
-  infile.open( "shapes.old", std::ios::in | std::ios::binary | std::ios::ate );
+  infile.open( "shapes.ega", std::ios::in | std::ios::binary | std::ios::ate );
 
   if( !infile.is_open() )
   {
@@ -136,7 +131,7 @@ int32_t main()
 
   backBuffer = create_bitmap( CHAR_BUFFER_WIDTH, CHAR_BUFFER_HEIGHT );
 
-  infile.open( "charset.old", std::ios::in | std::ios::binary | std::ios::ate );
+  infile.open( "charset.ega", std::ios::in | std::ios::binary | std::ios::ate );
 
   if( !infile.is_open() )
   {
@@ -185,9 +180,9 @@ int32_t main()
 
   backBuffer = create_bitmap( BORDER_WIDTH, BORDER_HEIGHT );
 
-  // Just replace this file with any of the .old files you'd like to extract.
+  // Just replace this file with any of the .ega files you'd like to extract.
   // Rename the output file below as well.
-  infile.open( "start.old", std::ios::in | std::ios::binary | std::ios::ate );
+  infile.open( "start.ega", std::ios::in | std::ios::binary | std::ios::ate );
 
   if( !infile.is_open() )
   {
