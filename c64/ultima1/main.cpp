@@ -8,6 +8,13 @@
 #include "../../allegro/include/allegro.h"
 #include "../../allegro/include/winalleg.h"
 
+#define NUM_TILES       48
+#define PIXELS_PER_QUAD 8
+#define PIXELS_PER_BYTE 8
+
+#define TILE_HEIGHT     16
+#define TILE_WIDTH      16
+
 
 int32_t main()
 {
@@ -59,159 +66,108 @@ int32_t main()
     return -1;
   }
 
-  int32_t val { 0 };
-  int32_t posX { 0 };
-  int32_t posY { 0 };
   int32_t xOffset { 0 };
   int32_t yOffset { 0 };
 
-  // This code uses st.prg or st-tiles.prg
   infile.seekg( 2, std::ios::beg );
-
-  // other tiles are stored in quadrants:
-  const int32_t numTiles{ 48 };
 
   // --------------------------------------------
   // 1 byte = 8 pixels
-  for( int32_t k = 0; k < numTiles; k++ )
+  for( int32_t k = 0; k < NUM_TILES; k++ )
   {
-    posX = 0;
-    posY = 0;
+    int32_t posX = 0;
+    int32_t posY = 0;
 
-    for( int32_t i = 0; i < 8; ++i )
+    for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      val = infile.get();
-      int32_t c = val & 0xf;
+      int32_t val{ infile.get() };
+      int32_t c{ val & 0xf };
       if( c == 0 ) c = 1; // switch to white
 
       // Temp
       c = 1;
 
-      int32_t v = val & 0x80;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x40;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x20;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x10;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x8;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x4;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x2;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x1;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
+      for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
+      {
+        int32_t bit{ 0x80 };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+      }
 
       posX = 0;
       ++posY;
     }
 
-    posX = 8;
+    posX = PIXELS_PER_BYTE;
     posY = 0;
 
-    for( int32_t i = 0; i < 8; ++i )
+    for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      val = infile.get();
-      int32_t c = val & 0xf;
+      int32_t val{ infile.get() };
+      int32_t c{ val & 0xf };
       if( c == 0 ) c = 1; // switch to white
 
       // Temp
       c = 1;
 
-      int32_t v = val & 0x80;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x40;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x20;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x10;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x8;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x4;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x2;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x1;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
+      for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
+      {
+        int32_t bit{ 0x80 };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+      }
 
       posX = 8;
       ++posY;
     }
 
     posX = 0;
-    posY = 8;
+    posY = PIXELS_PER_BYTE;
 
-    for( int32_t i = 0; i < 8; ++i )
+    for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      val = infile.get();
-      int32_t c = val & 0xf;
+      int32_t val{ infile.get() };
+      int32_t c{ val & 0xf };
       if( c == 0 ) c = 1; // switch to white
 
       // Temp
       c = 1;
 
-      int32_t v = val & 0x80;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x40;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x20;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x10;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x8;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x4;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x2;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x1;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
+      for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
+      {
+        int32_t bit{ 0x80 };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+      }
 
       posX = 0;
       ++posY;
     }
 
-    posX = 8;
-    posY = 8;
+    posX = PIXELS_PER_BYTE;
+    posY = PIXELS_PER_BYTE;
 
-    for( int32_t i = 0; i < 8; ++i )
+    for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      val = infile.get();
-      int32_t c = val & 0xf;
+      int32_t val{ infile.get() };
+      int32_t c{ val & 0xf };
       if( c == 0 ) c = 1; // switch to white
 
       // Temp
       c = 1;
 
-      int32_t v = val & 0x80;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x40;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x20;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x10;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x8;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x4;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x2;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
-      v = val & 0x1;
-      putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( v ? c64Colors[c] : c64Colors[0] ) );
+      for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
+      {
+        int32_t bit{ 0x80 };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+      }
 
-      posX = 8;
+      posX = PIXELS_PER_BYTE;
       ++posY;
     }
 
-    xOffset += 16;
+    xOffset += TILE_WIDTH;
     if( xOffset >= 768 )
     {
       xOffset = 0;
-      yOffset += 16;
+      yOffset += TILE_HEIGHT;
     }
 
     if( infile.eof() )
