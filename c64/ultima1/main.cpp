@@ -15,6 +15,11 @@
 #define TILE_HEIGHT     16
 #define TILE_WIDTH      16
 
+#define TILE_BUFFER_WIDTH  ( TILE_WIDTH * NUM_TILES )
+#define TILE_BUFFER_HEIGHT ( TILE_HEIGHT )
+
+#define EXPORT_VERTICAL_STRIP 0
+
 
 int32_t main()
 {
@@ -37,7 +42,7 @@ int32_t main()
     return -1;
   }
 
-  int32_t c64Colors[16] =
+  const int32_t c64Colors[16] =
   {
     makecol( 0x00, 0x00, 0x00 ), // Black
     makecol( 0xff, 0xff, 0xff ), // White
@@ -57,7 +62,18 @@ int32_t main()
     makecol( 0xa3, 0xa7, 0xa7 )  // Light Gray
   };
 
-  BITMAP* backBuffer{ create_bitmap( 768, 16 ) };
+  // TODO: Should be read from disk
+  const int32_t tileColors[] =
+  {
+    0x6,0x5,0x5,0x1,0x1,0x1,0x1,0x1,
+    0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,
+    0x1,0x1,0x5,0x5,0x1,0x1,0x1,0x1,
+    0x1,0x1,0x1,0x1,0x5,0x5,0x1,0x1,
+    0x5,0x5,0x1,0x1,0x1,0x1,0x1,0x1,
+    0x1,0x1,0x1,0x1,0x1,0x1,0x2,0x6
+  };
+
+  BITMAP* backBuffer{ create_bitmap( TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT ) };
 
   std::ifstream infile;
   infile.open( "st.prg", std::ios::binary );
@@ -68,6 +84,7 @@ int32_t main()
 
   int32_t xOffset { 0 };
   int32_t yOffset { 0 };
+  const int32_t bit{ 0x80 };
 
   infile.seekg( 2, std::ios::beg );
 
@@ -75,22 +92,18 @@ int32_t main()
   // 1 byte = 8 pixels
   for( int32_t k = 0; k < NUM_TILES; k++ )
   {
+    const int32_t tileColor{ tileColors[k] };
+
     int32_t posX = 0;
     int32_t posY = 0;
 
     for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      int32_t val{ infile.get() };
-      int32_t c{ val & 0xf };
-      if( c == 0 ) c = 1; // switch to white
-
-      // Temp
-      c = 1;
-
+      const int32_t val{ infile.get() };
       for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
       {
-        int32_t bit{ 0x80 };
-        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+        const int32_t color{ ( val & ( bit >> i ) ? c64Colors[tileColor] : c64Colors[0] ) };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, color );
       }
 
       posX = 0;
@@ -102,17 +115,11 @@ int32_t main()
 
     for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      int32_t val{ infile.get() };
-      int32_t c{ val & 0xf };
-      if( c == 0 ) c = 1; // switch to white
-
-      // Temp
-      c = 1;
-
+      const int32_t val{ infile.get() };
       for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
       {
-        int32_t bit{ 0x80 };
-        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+        const int32_t color{ ( val & ( bit >> i ) ? c64Colors[tileColor] : c64Colors[0] ) };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, color );
       }
 
       posX = 8;
@@ -124,17 +131,11 @@ int32_t main()
 
     for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      int32_t val{ infile.get() };
-      int32_t c{ val & 0xf };
-      if( c == 0 ) c = 1; // switch to white
-
-      // Temp
-      c = 1;
-
+      const int32_t val{ infile.get() };
       for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
       {
-        int32_t bit{ 0x80 };
-        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+        const int32_t color{ ( val & ( bit >> i ) ? c64Colors[tileColor] : c64Colors[0] ) };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, color );
       }
 
       posX = 0;
@@ -146,17 +147,11 @@ int32_t main()
 
     for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
     {
-      int32_t val{ infile.get() };
-      int32_t c{ val & 0xf };
-      if( c == 0 ) c = 1; // switch to white
-
-      // Temp
-      c = 1;
-
+      const int32_t val{ infile.get() };
       for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
       {
-        int32_t bit{ 0x80 };
-        putpixel( backBuffer, xOffset + posX++, yOffset + posY, ( val & ( bit >> i ) ? c64Colors[c] : c64Colors[0] ) );
+        const int32_t color{ ( val & ( bit >> i ) ? c64Colors[tileColor] : c64Colors[0] ) };
+        putpixel( backBuffer, xOffset + posX++, yOffset + posY, color );
       }
 
       posX = PIXELS_PER_BYTE;
@@ -164,7 +159,7 @@ int32_t main()
     }
 
     xOffset += TILE_WIDTH;
-    if( xOffset >= 768 )
+    if( xOffset >= TILE_BUFFER_WIDTH )
     {
       xOffset = 0;
       yOffset += TILE_HEIGHT;
@@ -176,8 +171,30 @@ int32_t main()
     }
   }
 
+  // Optionally create a vertical strip
+#if EXPORT_VERTICAL_STRIP
+  uint32_t sourceRow{ 0 };
+  uint32_t sourceCol{ 0 };
+
+  BITMAP* backBuffer2{ create_bitmap( TILE_WIDTH, TILE_HEIGHT * NUM_TILES ) };
+  for( uint32_t i{ 0 }; i < NUM_TILES; ++i )
+  {
+    blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT );
+    sourceCol += TILE_WIDTH;
+
+    if( sourceCol >= TILE_BUFFER_WIDTH )
+    {
+      sourceCol = 0;
+      sourceRow += TILE_HEIGHT;
+    }
+  }
+
+  save_pcx( "tiles.pcx", backBuffer2, nullptr );
+
+  destroy_bitmap( backBuffer2 );
+#else
   save_pcx( "tiles.pcx", backBuffer, nullptr );
-  destroy_bitmap( backBuffer );
+#endif // EXPORT_VERTICAL_STRIP
 
   return 0;
 }
