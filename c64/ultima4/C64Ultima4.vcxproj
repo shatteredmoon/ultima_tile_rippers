@@ -99,8 +99,8 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="colors.prg" />
     <None Include="shapes.prg" />
-    <None Include="Ultima IV (D1S1) [Program] (1985) [Origin].d64" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
