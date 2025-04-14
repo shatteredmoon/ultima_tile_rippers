@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="colors.prg" />
+    <None Include="moons.prg" />
     <None Include="shapes.prg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

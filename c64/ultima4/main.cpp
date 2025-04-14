@@ -29,6 +29,11 @@
 #define TILE_BUFFER_WIDTH  ( TILE_WIDTH * TILES_PER_ROW )
 #define TILE_BUFFER_HEIGHT ( TILE_HEIGHT * TILES_PER_COL )
 
+#define CHAR_HEIGHT     8
+#define CHAR_WIDTH      8
+
+#define NUM_MOON_TILES  8
+
 #define EXPORT_VERTICAL_STRIP 0
 
 
@@ -147,6 +152,54 @@ int32_t main()
 #endif // EXPORT_VERTICAL_STRIP
 
   destroy_bitmap( backBuffer );
+
+  backBuffer = create_bitmap( CHAR_WIDTH * NUM_MOON_TILES, CHAR_HEIGHT );
+
+  infile.open( "moons.prg", std::ios::binary );
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  // Moon data exists in the .d64 image at offset 0x16109.
+  for( int32_t k = 0; k < NUM_MOON_TILES; ++k )
+  {
+    for( int32_t j = 0; j < PIXELS_PER_QUAD; ++j )
+    {
+      const int32_t val{ infile.get() };
+      for( int32_t i = 0; i < PIXELS_PER_BYTE; ++i )
+      {
+        const int32_t color{ ( val & ( bit >> i ) ? c64Colors[1] : c64Colors[0] ) };
+        putpixel( backBuffer, k * PIXELS_PER_QUAD + i, j, color );
+      }
+    }
+  }
+
+  // Optionally create a vertical strip
+#if EXPORT_VERTICAL_STRIP
+  sourceRow = 0;
+  sourceCol = 0;
+
+  backBuffer2  = create_bitmap( CHAR_WIDTH, CHAR_HEIGHT * NUM_MOON_TILES );
+
+  for( uint32_t i{ 0 }; i < NUM_MOON_TILES; ++i )
+  {
+    blit( backBuffer, backBuffer2, sourceCol, sourceRow, 0, i * CHAR_HEIGHT, CHAR_WIDTH, CHAR_HEIGHT );
+    sourceCol += CHAR_WIDTH;
+
+    if( sourceCol >= ( CHAR_WIDTH * NUM_MOON_TILES ) )
+    {
+      sourceCol = 0;
+      sourceRow += CHAR_HEIGHT;
+    }
+  }
+
+  save_pcx( "moons.pcx", backBuffer2, nullptr );
+
+  destroy_bitmap( backBuffer2 );
+#else
+  save_pcx( "moons.pcx", backBuffer, nullptr );
+#endif // EXPORT_VERTICAL_STRIP
 
   return 0;
 }
