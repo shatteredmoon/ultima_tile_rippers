@@ -23,6 +23,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C64Ultima1", "c64\ultima1\C
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C64Ultima2", "c64\ultima2\C64Ultima2.vcxproj", "{61B1CBFF-0F26-4EB7-95ED-E0F576D5BBE4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C64Ultima4", "c64\ultima4\C64Ultima4.vcxproj", "{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -95,6 +97,12 @@ Global
 		{61B1CBFF-0F26-4EB7-95ED-E0F576D5BBE4}.Release|Win32.ActiveCfg = Release|Win32
 		{61B1CBFF-0F26-4EB7-95ED-E0F576D5BBE4}.Release|Win32.Build.0 = Release|Win32
 		{61B1CBFF-0F26-4EB7-95ED-E0F576D5BBE4}.Release|x64.ActiveCfg = Release|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Debug|Win32.Build.0 = Debug|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Debug|x64.ActiveCfg = Debug|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Release|Win32.ActiveCfg = Release|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Release|Win32.Build.0 = Release|Win32
+		{A7E3880F-540E-4C9E-B19E-7E0A44CD7017}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
