@@ -1,4 +1,4 @@
-// Extracts Ultima III tile and text data from Commodore 64 sources.
+// Extracts Ultima III tile data from Commodore 64 sources.
 
 #define ALLEGRO_NO_MAGIC_MAIN
 #define ALLEGRO_STATICLINK 1
@@ -30,20 +30,16 @@ int32_t main()
     return -1;
   }
 
-  int32_t depth{ 0 };
-  if( ( depth = desktop_color_depth() ) != 0 )
-  {
-    depth = 16;
-  }
-
+  int32_t depth{ desktop_color_depth() };
   set_color_depth( depth );
+
   if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, 1024, 768, 0, 0 ) != 0 )
   {
     allegro_message( "Failed to set graphics mode" );
     return -1;
   }
 
-  int32_t c64ColorPalette[16] =
+  int32_t c64Colors[] =
   {
     makecol( 0x00, 0x00, 0x00 ), // Black
     makecol( 0xff, 0xff, 0xff ), // White
@@ -66,58 +62,63 @@ int32_t main()
   BITMAP* backBuffer{ create_bitmap( TILE_BUFFER_WIDTH, TILE_BUFFER_HEIGHT ) };
 
   std::ifstream infile;
-  infile.open("ultima3a.d64", std::ios::binary);
 
-  if( infile.is_open() )
+  infile.open( "colors.prg", std::ios::binary );
+  if( !infile.is_open() )
   {
-    // Tile colors offset
-    infile.seekg( 0xdd61, std::ios::beg );
+    return -1;
+  }
 
-    int32_t tileColors[NUM_TILES];
-    for( int32_t i = 0; i < NUM_TILES; ++i )
+  // The tile colors exist in the .d64 image at offset 0xdd61.
+  int32_t tileColors[NUM_TILES];
+  for( int32_t i = 0; i < NUM_TILES; ++i )
+  {
+    tileColors[i] = infile.get();
+  }
+
+  infile.close();
+
+  infile.open( "shapes.prg", std::ios::binary );
+  if( !infile.is_open() )
+  {
+    return -1;
+  }
+
+  int32_t posX{ 0 };
+  int32_t posY{ 0 };
+
+  // Tile/shape data exists in the .d64 image at offset 0x8800.
+  // Tiles are set up like this: The first 2 bytes represent the left-half and right half of the first tile, then the
+  // next 2-bytes are for the very top of the second tile This continues until the first row of all tiles are read.
+  // Each byte = 8 pixels.
+  for( int32_t k = 0; k < TILE_HEIGHT; ++k )
+  {
+    // Draw a single tile row for all tiles. Each tile row is represented by 2 bytes.
+    for( int32_t j = 0; j < NUM_TILES * 2; ++j )
     {
-      tileColors[i] = infile.get();
-    }
+      int32_t index{ j / 2 };
+      int32_t backIndex{ tileColors[index] & 0x0f }; // Background color
+      int32_t foreIndex{ tileColors[index] & 0xf0 }; // Foreground color
+      foreIndex = foreIndex >> 4;
 
-    // Tile data offset
-    infile.seekg( 0x8800, std::ios::beg );
+      int32_t val{ infile.get() };
 
-    int32_t posX{ 0 };
-    int32_t posY{ 0 };
-
-    // Tiles are set up like this:
-    // The first 2 bytes represent the left-half and right half of the first tile, then the next 2-bytes are for
-    // the very top of the second tile This continues until the first row of all tiles are read. Each byte = 8
-    // pixels. 0 = not drawn, 1 = drawn.
-    for( int32_t k = 0; k < TILE_HEIGHT; ++k )
-    {
-      // Draw a single tile row for all tiles. Each tile row is represented by 2 bytes.
-      for( int32_t j = 0; j < NUM_TILES * 2; ++j )
+      // Draw a single tile row
+      for( int32_t i = 0 ; i < TILE_HALF_WIDTH; ++i )
       {
-        int32_t index{ j / 2 };
-        int32_t backIndex{ tileColors[index] & 0x0f }; // Background color
-        int32_t foreIndex{ tileColors[index] & 0xf0 }; // Foreground color
-        foreIndex = foreIndex >> 4;
+        // We are only interested in the most significant bit per pass
+        const int32_t color{ val & 0x80 ? c64Colors[foreIndex] : c64Colors[backIndex] };
+        putpixel( backBuffer, posX, posY, color );
 
-        int32_t val{ infile.get() };
-
-        // Draw a single tile row
-        for( int32_t i = 0 ; i < TILE_HALF_WIDTH; ++i )
-        {
-          // We are only interested in the most significant bit per pass
-          const int32_t color{ val & 0x80 ? c64ColorPalette[foreIndex] : c64ColorPalette[backIndex] };
-          putpixel( backBuffer, posX, posY, color );
-
-          // Shift into most significant bit, keeping val to byte-size
-          val = ( val << 1 );
-          val &= 0xff;
-          ++posX;
-        }
+        // Shift into most significant bit, keeping val to byte-size
+        val = ( val << 1 );
+        val &= 0xff;
+        ++posX;
       }
-
-      ++posY;
-      posX = 0;
     }
+
+    ++posY;
+    posX = 0;
   }
 
   infile.close();
